@@ -24,29 +24,36 @@
     var CONFIG = {"hostname":"hooo1941.github.io","root":"/","images":"/images","scheme":"Muse","version":"8.0.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="HooBlog">
-<meta property="og:url" content="https://hooo1941.github.io/index.html">
+  <meta name="description" content="测试鸡蛋壳等级问题： 设仅有2枚鸡蛋1把直尺（精确到毫米，2枚鸡蛋的品质相同），用鸡蛋刚刚摔碎的高度来定义其蛋壳等级（等级不超过n毫米），鸡蛋摔碎后不能再重复进行试验，请设计尽可能高效的算法测试出鸡蛋的蛋壳等级。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="测试鸡蛋壳等级问题">
+<meta property="og:url" content="https://hooo1941.github.io/2020/11/11/dropegg/index.html">
 <meta property="og:site_name" content="HooBlog">
+<meta property="og:description" content="测试鸡蛋壳等级问题： 设仅有2枚鸡蛋1把直尺（精确到毫米，2枚鸡蛋的品质相同），用鸡蛋刚刚摔碎的高度来定义其蛋壳等级（等级不超过n毫米），鸡蛋摔碎后不能再重复进行试验，请设计尽可能高效的算法测试出鸡蛋的蛋壳等级。">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-11T11:26:52.000Z">
+<meta property="article:modified_time" content="2020-11-11T11:32:05.355Z">
 <meta property="article:author" content="Hooo1941">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="homework">
+<meta property="article:tag" content="数据结构">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://hooo1941.github.io/">
+<link rel="canonical" href="https://hooo1941.github.io/2020/11/11/dropegg/">
 
 
 <script class="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh_cn'
   };
 </script>
 
-  <title>HooBlog</title>
+  <title>测试鸡蛋壳等级问题 | HooBlog</title>
   
 
 
@@ -205,11 +212,12 @@
 </noscript>
 
 
-    <div class="main-inner index posts-expand">
+    <div class="main-inner post posts-expand">
       
 
       
-    
+
+  
 
 
 <div class="post-block">
@@ -229,10 +237,9 @@
       <meta itemprop="name" content="HooBlog">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/11/11/dropegg/" class="post-title-link" itemprop="url">测试鸡蛋壳等级问题</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          测试鸡蛋壳等级问题
+        </h1>
 
         <div class="post-meta-container">
           <div class="post-meta">
@@ -256,17 +263,13 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>测试鸡蛋壳等级问题：</p>
+        <p>测试鸡蛋壳等级问题：</p>
 <p>设仅有2枚鸡蛋1把直尺（精确到毫米，2枚鸡蛋的品质相同），用鸡蛋刚刚摔碎的高度来定义其蛋壳等级（等级不超过n毫米），鸡蛋摔碎后不能再重复进行试验，请设计尽可能高效的算法测试出鸡蛋的蛋壳等级。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/11/11/dropegg/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
+<a id="more"></a>
+<p>主要思想：将n毫米平均分成$\sqrt{n}$块，即高度为$\sqrt{n},2\sqrt{n},3\sqrt{n}\dots n$mm，将第一个鸡蛋从$\sqrt{n}$mm开始扔，每次上升$\sqrt{n}$mm，直到鸡蛋摔碎，则可以在$\sqrt {n}$mm范围确定鸡蛋的品质，第二枚鸡蛋只需从上次鸡蛋最后没有摔碎的高度开始，每次上升$1$mm，直到摔碎。最多可能尝试的次数是$2\sqrt{n}$次。</p>
+<p>可推广得：若有m枚鸡蛋，最多可能尝试的次数为$2\sqrt[m] n$次。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cmath&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">broken</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//有没有摔碎</span></span><br><span class="line">	<span class="keyword">if</span> (x &lt;= <span class="number">10</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cin</span> &gt;&gt; n; <span class="comment">// 等级不超过n毫米</span></span><br><span class="line">	<span class="keyword">int</span> x = <span class="built_in">sqrt</span>(n);</span><br><span class="line">	<span class="keyword">int</span> height = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (!broken(height))</span><br><span class="line">		height += x;</span><br><span class="line">	height -= x; <span class="comment">//鸡蛋等级范围是height ~ height + sqrt(n)</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> h = height; h &lt;= height + x; h++)</span><br><span class="line">		<span class="keyword">if</span> (broken(h))</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;鸡蛋等级为&quot;</span> &lt;&lt; h - <span class="number">1</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
     </div>
 
     
@@ -274,81 +277,23 @@
     
 
     <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/homework/" rel="tag"># homework</a>
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag"># 数据结构</a>
+          </div>
 
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh_cn">
-    <link itemprop="mainEntityOfPage" href="https://hooo1941.github.io/2020/11/11/WHUCTF2020-wp/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Hooo1941">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="HooBlog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/11/11/WHUCTF2020-wp/" class="post-title-link" itemprop="url">WHUCTF2020-wp</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-      
-
-      <time title="Created: 2020-11-11 18:48:48 / Modified: 19:21:38" itemprop="dateCreated datePublished" datetime="2020-11-11T18:48:48+08:00">2020-11-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>武汉大学第二届“珞格杯”校园CTF大赛部分题目Writeup</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/11/11/WHUCTF2020-wp/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/11/11/WHUCTF2020-wp/" rel="prev" title="WHUCTF2020-wp">
+                  <i class="fa fa-chevron-left"></i> WHUCTF2020-wp
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
     </footer>
   </article>
 </div>
@@ -357,11 +302,15 @@
 
 
 
-  
-
-
 
       
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -444,53 +393,25 @@
   
 
   
-      <script>
-  if (typeof MathJax === 'undefined') {
-    window.MathJax = {
-      tex: {
-        inlineMath: {'[+]': [['$', '$']]},
-        tags: 'ams'
-      },
-      options: {
-        renderActions: {
-          findScript: [10, doc => {
-            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = {node: text, delim: '', n: 0};
-              math.end = {node: text, delim: '', n: 0};
-              doc.math.push(math);
-            });
-          }, '', false],
-          insertedScript: [200, () => {
-            document.querySelectorAll('mjx-container').forEach(node => {
-              const target = node.parentNode;
-              if (target.nodeName.toLowerCase() === 'li') {
-                target.parentNode.classList.add('has-jax');
-              }
-            });
-          }, '', false]
-        }
-      }
-    };
-    const script = document.createElement('script');
-    script.src = '//cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-mml-chtml.js';
-    script.defer = true;
-    document.head.appendChild(script);
-  } else {
-    MathJax.startup.document.state(0);
-    MathJax.typesetClear();
-    MathJax.texReset();
-    MathJax.typeset();
-  }
-</script>
-
-    
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqusjs.css">
+
+<script>
+NexT.utils.loadComments('#disqus_thread', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqus.js', () => {
+    window.dsqjs = new DisqusJS({
+      api       : 'https://disqus.skk.moe/disqus/' || 'https://disqus.com/api/',
+      apikey    : 'le5yPQvXUqn37v1djwqUIwgGWCV6IkGk77hz8GXvhRSDnjfEXjxOnXsocWa0xDgF',
+      shortname : 'hooblog',
+      url       : "https://hooo1941.github.io/2020/11/11/dropegg/",
+      identifier: "2020/11/11/dropegg/",
+      title     : "测试鸡蛋壳等级问题",
+    });
+  }, window.DisqusJS);
+});
+</script>
 
 </body>
 </html>
