@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"hooo1941.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.0.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}};
+  </script>
+
+  <meta name="description" content="武汉大学人工智能大作业。蒙特卡洛树搜索实现五子棋。 github仓库：https:&#x2F;&#x2F;github.com&#x2F;Hooo1941&#x2F;Gobang_MCTS&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="五子棋的mcts实现">
+<meta property="og:url" content="https://hooo1941.github.io/2021/01/18/gobang-mcts/index.html">
+<meta property="og:site_name" content="HooBlog">
+<meta property="og:description" content="武汉大学人工智能大作业。蒙特卡洛树搜索实现五子棋。 github仓库：https:&#x2F;&#x2F;github.com&#x2F;Hooo1941&#x2F;Gobang_MCTS&#x2F;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/01/08/KDyChHb1I8dQFEA.jpg">
+<meta property="og:image" content="https://i.loli.net/2021/01/08/NBYXJqwrohgWDIt.jpg">
+<meta property="og:image" content="https://i.loli.net/2021/01/08/Mu5o4JX2htkdGVN.jpg">
+<meta property="og:image" content="https://i.loli.net/2021/01/08/YzS4hsQCb52ZWIH.png">
+<meta property="og:image" content="https://i.loli.net/2021/01/08/6mlQKnFZ48JHtYI.jpg">
+<meta property="og:image" content="https://i.loli.net/2021/01/08/UGIt2ljZFPupnQv.png">
+<meta property="og:image" content="https://i.loli.net/2021/01/08/nuDGF1I3rUEzNgy.png">
+<meta property="article:published_time" content="2021-01-18T11:26:52.000Z">
+<meta property="article:modified_time" content="2021-01-08T16:22:55.601Z">
+<meta property="article:author" content="Hoo1941">
+<meta property="article:tag" content="homework">
+<meta property="article:tag" content="武汉大学">
+<meta property="article:tag" content="ai">
+<meta property="article:tag" content="mcts">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/01/08/KDyChHb1I8dQFEA.jpg">
+
+
+<link rel="canonical" href="https://hooo1941.github.io/2021/01/18/gobang-mcts/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>五子棋的mcts实现 | HooBlog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?34413e2016fcdd640fa41f71447cbe78";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">HooBlog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <section class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90%E4%B8%8E%E5%8F%AF%E8%A1%8C%E6%80%9D%E8%B7%AF"><span class="nav-number">1.</span> <span class="nav-text">问题分析与可行思路</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%9B%AE%E6%A0%87"><span class="nav-number">1.1.</span> <span class="nav-text">实现目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E6%A8%A1%E5%9D%97%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.2.</span> <span class="nav-text">软件模块设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%95%8C%E9%9D%A2%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="nav-number">1.3.</span> <span class="nav-text">界面设计思路</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.</span> <span class="nav-text">算法详细设计</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%95%8C%E9%9D%A2%E7%B1%BB%E4%B8%8E%E6%A3%8B%E7%9B%98%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.1.</span> <span class="nav-text">界面类与棋盘设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A6%81%E6%89%8B%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.2.</span> <span class="nav-text">禁手算法设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%92%99%E7%89%B9%E5%8D%A1%E6%B4%9B%E6%A0%91%E6%90%9C%E7%B4%A2%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">蒙特卡洛树搜索的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E4%BC%98%E7%82%B9"><span class="nav-number">2.3.1.</span> <span class="nav-text">算法优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.2.</span> <span class="nav-text">算法实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%89%E6%8B%A9"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">选择</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%93%E5%B1%95"><span class="nav-number">2.3.3.</span> <span class="nav-text">拓展</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BF%E7%9C%9F"><span class="nav-number">2.3.4.</span> <span class="nav-text">仿真</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">2.3.5.</span> <span class="nav-text">反向传播</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C"><span class="nav-number">2.3.6.</span> <span class="nav-text">返回结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A"><span class="nav-number">3.</span> <span class="nav-text">测试分析报告</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E8%BF%87%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">调试过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%88%90%E5%93%81%E5%B1%95%E7%A4%BA"><span class="nav-number">3.2.</span> <span class="nav-text">成品展示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD"><span class="nav-number">3.2.1.</span> <span class="nav-text">性能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">3.2.2.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%88%AA%E5%9B%BE"><span class="nav-number">3.2.3.</span> <span class="nav-text">运行截图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%9C%A8%E9%97%AE%E9%A2%98%E4%B8%8E%E6%94%B9%E8%BF%9B%E6%96%B9%E5%90%91"><span class="nav-number">3.2.4.</span> <span class="nav-text">存在问题与改进方向</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B9%E8%BF%9B%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.5.</span> <span class="nav-text">改进方案</span></a></li></ol></li></ol></li></ol></div>
+        </section>
+        <!--/noindex-->
+
+        <section class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Hoo1941</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.ofortune.xyz/" title="https:&#x2F;&#x2F;blog.ofortune.xyz" rel="noopener" target="_blank">Paul</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://weivwang.github.io/" title="https:&#x2F;&#x2F;weivwang.github.io" rel="noopener" target="_blank">Wei</a>
+        </li>
+    </ul>
+  </div>
+
+        </section>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://hooo1941.github.io/2021/01/18/gobang-mcts/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Hoo1941">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HooBlog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          五子棋的mcts实现
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-01-18 19:26:52" itemprop="dateCreated datePublished" datetime="2021-01-18T19:26:52+08:00">2021-01-18</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-01-09 00:22:55" itemprop="dateModified" datetime="2021-01-09T00:22:55+08:00">2021-01-09</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>武汉大学人工智能大作业。蒙特卡洛树搜索实现五子棋。</p>
+<p>github仓库：<a target="_blank" rel="noopener" href="https://github.com/Hooo1941/Gobang_MCTS/">https://github.com/Hooo1941/Gobang_MCTS/</a></p>
+<a id="more"></a>
+<h1 id="问题分析与可行思路"><a href="#问题分析与可行思路" class="headerlink" title="问题分析与可行思路"></a>问题分析与可行思路</h1><h2 id="实现目标"><a href="#实现目标" class="headerlink" title="实现目标"></a>实现目标</h2><p>包括五子棋棋盘界面、人人对弈、人机对弈、机器与<br>机器对弈的设计、禁手规则的设计。</p>
+<p>重点是蒙特卡洛树搜索的实现。</p>
+<h2 id="软件模块设计"><a href="#软件模块设计" class="headerlink" title="软件模块设计"></a>软件模块设计</h2><p>软件源代码分为6个模块。</p>
+<ol>
+<li>mainwindow.ui 和 mainwindow.cpp 实现了主菜单。</li>
+<li>game.cpp 实现了界面的绘制和事件的处理。</li>
+<li>gamemodel.cpp 实现了对棋盘数组操作和判断状态的函数。</li>
+<li>config.h 定义了一些可修改的配置。</li>
+<li>forbid.cpp 实现了禁手规则的判断。</li>
+<li>ai.cpp 实现了蒙特卡洛树搜索。</li>
+</ol>
+<h2 id="界面设计思路"><a href="#界面设计思路" class="headerlink" title="界面设计思路"></a>界面设计思路</h2><p>界面设计使用C++，Qt实现，可以跨平台运行。</p>
+<p>初始界面设计如图，设计3个按钮进入不同模式。</p>
+<p><img src="https://i.loli.net/2021/01/08/KDyChHb1I8dQFEA.jpg" alt="menu"></p>
+<p>棋盘设计：</p>
+<p><img src="https://i.loli.net/2021/01/08/NBYXJqwrohgWDIt.jpg" alt="fig2"></p>
+<p>包含背景图，已下棋子和最近走子的绘制，指针位置指示。</p>
+<h1 id="算法详细设计"><a href="#算法详细设计" class="headerlink" title="算法详细设计"></a>算法详细设计</h1><h2 id="界面类与棋盘设计"><a href="#界面类与棋盘设计" class="headerlink" title="界面类与棋盘设计"></a>界面类与棋盘设计</h2><p>棋盘模块包括棋盘状态和当前玩家，棋盘状态用二维vector实现，更新棋盘时调用禁手判断。</p>
+<p>界面绘制和鼠标事件捕捉使用Qt库处理，鼠标移动时取距离最近点绘制指针提示，点击时调用<br>棋盘模块更新棋盘，再调用界面重绘函数。</p>
+<p>记录最后一个落的子，绘制落子提示。</p>
+<h2 id="禁手算法设计"><a href="#禁手算法设计" class="headerlink" title="禁手算法设计"></a>禁手算法设计</h2><p>三三禁手和四四禁手指横、竖和两条斜线出现了两个活三或活四、冲四。<br>长连禁手指一子落下形成连续六子或六子以上相连。</p>
+<p>我将每一个方向的禁手判断用一个循环处理，向两边遍历，枚举禁手的每一种情况。</p>
+<p>实例代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (j = <span class="number">0</span>; j &lt;= <span class="number">9</span>; j++) <span class="comment">//横活三判断</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">map</span>[x][j] == <span class="number">0</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">5</span>] == <span class="number">0</span>) <span class="comment">//活三判断，不能是死三/眠三</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">map</span>[x][j + <span class="number">1</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">2</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">3</span>] == <span class="number">1</span> &amp;&amp;</span><br><span class="line">			<span class="built_in">map</span>[x][j + <span class="number">4</span>] == <span class="number">0</span> &amp;&amp; (y == j + <span class="number">1</span> || y == j + <span class="number">2</span> || y == j + <span class="number">3</span>))</span><br><span class="line">			fb33_1 = <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">map</span>[x][j + <span class="number">1</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">2</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">4</span>] == <span class="number">1</span> &amp;&amp;</span><br><span class="line">			<span class="built_in">map</span>[x][j + <span class="number">3</span>] == <span class="number">0</span> &amp;&amp; (y == j + <span class="number">1</span> || y == j + <span class="number">2</span> || y == j + <span class="number">4</span>))</span><br><span class="line">			fb33_1 = <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">map</span>[x][j + <span class="number">1</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">3</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">4</span>] == <span class="number">1</span> &amp;&amp;</span><br><span class="line">			<span class="built_in">map</span>[x][j + <span class="number">2</span>] == <span class="number">0</span> &amp;&amp; (y == j + <span class="number">1</span> || y == j + <span class="number">3</span> || y == j + <span class="number">4</span>))</span><br><span class="line">			fb33_1 = <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">map</span>[x][j + <span class="number">2</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">3</span>] == <span class="number">1</span> &amp;&amp; <span class="built_in">map</span>[x][j + <span class="number">4</span>] == <span class="number">1</span> &amp;&amp;</span><br><span class="line">			<span class="built_in">map</span>[x][j + <span class="number">1</span>] == <span class="number">0</span> &amp;&amp; (y == j + <span class="number">2</span> || y == j + <span class="number">3</span> || y == j + <span class="number">4</span>))</span><br><span class="line">			fb33_1 = <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) <span class="comment">// 竖长连判断，根据当前落子往后遍历6个棋子，有一种符合就算长连禁手</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (y - i &gt;= <span class="number">0</span> &amp;&amp; y - i + <span class="number">5</span> &lt; kBoardSizeNum &amp;&amp;</span><br><span class="line">		<span class="built_in">map</span>[x][y - i] == <span class="built_in">map</span>[x][y - i + <span class="number">1</span>] &amp;&amp;</span><br><span class="line">		<span class="built_in">map</span>[x][y - i] == <span class="built_in">map</span>[x][y - i + <span class="number">2</span>] &amp;&amp;</span><br><span class="line">		<span class="built_in">map</span>[x][y - i] == <span class="built_in">map</span>[x][y - i + <span class="number">3</span>] &amp;&amp;</span><br><span class="line">		<span class="built_in">map</span>[x][y - i] == <span class="built_in">map</span>[x][y - i + <span class="number">4</span>] &amp;&amp;</span><br><span class="line">		<span class="built_in">map</span>[x][y - i] == <span class="built_in">map</span>[x][y - i + <span class="number">5</span>])</span><br><span class="line">		ol++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当出现禁手时，程序会弹框提示，如图</p>
+<p><img src="https://i.loli.net/2021/01/08/Mu5o4JX2htkdGVN.jpg" alt="fig3"></p>
+<p>特别要注意的是，若一个位置下棋可以五连，则无视三三和四四禁手。</p>
+<h2 id="蒙特卡洛树搜索的实现"><a href="#蒙特卡洛树搜索的实现" class="headerlink" title="蒙特卡洛树搜索的实现"></a>蒙特卡洛树搜索的实现</h2><h3 id="算法优点"><a href="#算法优点" class="headerlink" title="算法优点"></a>算法优点</h3><p>蒙特卡洛树搜索可以较为有效地解决一些探索空间巨大的问题。MCTS可以随时停止，适用于各种棋盘游戏，包括五子棋。自2006年以来，最优秀的程序围棋全部使用蒙特卡洛树搜索。</p>
+<h3 id="算法实现"><a href="#算法实现" class="headerlink" title="算法实现"></a>算法实现</h3><p>蒙特卡洛模拟对局就是从某一棋局出发，随机走棋。有人形象地比喻，让两个傻子下棋，他们只懂得棋规，不懂得策略，最终总是可以决出胜负。这个胜负是有偶然性的。但是如果让成千上万对傻子下这盘棋，那么结果的统计还是可以给出该棋局的固有胜率和胜率最高的着法。</p>
+<p>蒙特卡洛树搜索包含选择(Selection)，拓展(Expansion)，模拟(Simulation)，反向传播(Backpropagation)四个步骤。搜索函数如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">time_t</span> start = time(<span class="literal">nullptr</span>);</span><br><span class="line"><span class="comment">// 周围两圈有棋子即为可考虑点</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">pair</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt;&gt; available;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; kBoardSizeNum; i++)</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; kBoardSizeNum; j++)</span><br><span class="line">		<span class="keyword">if</span> (check(<span class="built_in">map</span>, i, j, playerFlag))</span><br><span class="line">			available.emplace_back(<span class="built_in">std</span>::<span class="built_in">make_pair</span>(i, j));</span><br><span class="line">node *root = <span class="keyword">new</span> node;</span><br><span class="line">root-&gt;playerFlag = !playerFlag;</span><br><span class="line">root-&gt;pos = <span class="built_in">std</span>::<span class="built_in">make_pair</span>(<span class="number">-1</span>, <span class="number">-1</span>);</span><br><span class="line"><span class="keyword">while</span> (time(<span class="literal">nullptr</span>) - start &lt; kAIDelay)</span><br><span class="line">&#123;</span><br><span class="line">	path.clear();</span><br><span class="line">	node *leaf = selection(root);</span><br><span class="line">	<span class="keyword">if</span> (leaf-&gt;visit &gt; <span class="number">0</span> &amp;&amp; leaf-&gt;children.empty())</span><br><span class="line">		leaf = expansion(leaf);</span><br><span class="line">	<span class="keyword">int</span> score = simulation();</span><br><span class="line">	backPropagation(score);</span><br><span class="line">&#125;</span><br><span class="line">node *pNode;</span><br><span class="line">pNode = *<span class="built_in">std</span>::max_element( <span class="comment">// 选择胜率最大的点</span></span><br><span class="line">	root-&gt;children.begin(),</span><br><span class="line">	root-&gt;children.end(),</span><br><span class="line">	<span class="comment">// UCB实现选择</span></span><br><span class="line">	[](<span class="keyword">const</span> node *a, <span class="keyword">const</span> node *b) &#123;</span><br><span class="line">		<span class="keyword">return</span> a-&gt;win / (<span class="keyword">double</span>)a-&gt;visit &lt; b-&gt;win / (<span class="keyword">double</span>)b-&gt;visit;</span><br><span class="line">	&#125;);</span><br><span class="line"><span class="function">emit <span class="title">pos</span><span class="params">(pNode-&gt;pos.first, pNode-&gt;pos.second)</span></span>;</span><br><span class="line">deleteAll(root);</span><br></pre></td></tr></table></figure>
+<h4 id="选择"><a href="#选择" class="headerlink" title="选择"></a>选择</h4><p>虽然通过蒙特卡罗方法可以近似估计一个状态的好坏，但我们依然无法对太多状态进行估算。因此，我们需要有选择的集中力量对决策树中的可能更有价值的那些节点进行估算。这就需要使用蒙特卡洛树搜索，它提供了一种选择机制，使我们能够尽量选择决策树中比较有潜力的节点进行蒙特卡洛模拟，从而使得树可以尽量集中在“较好”的策略上进行“生长”。</p>
+<p>该程序选择选用的方法是UCT。UCT树的不规则性表示在搜索过程中既要充分利用已有的知识，给胜率高的节点更多的机会，又要考虑探索那些暂时胜率不高的兄弟节点。</p>
+<p>一个节点的UCB计算公式为</p>
+<script type="math/tex; mode=display">
+  \begin{aligned}
+    \text{UCB} = \frac {w_{i}}{n_{i}}+c\sqrt {\frac {\ln N_{i}}{n_{i}}} \\
+    w_{i}\text{代表第i次移动后取胜的次数；}                             \\
+    n_{i}\text{代表第i次移动后仿真的次数；}                             \\
+    c\text{为探索参数—理论上等于}{\sqrt {2}}\text{；}                   \\
+    \text{在实际中通常可凭经验选择；}                                   \\
+    t\text{代表仿真总次数，等于父节点的}n_{i}                           \\
+  \end{aligned}</script><p>程序会递归搜索树的每一层的UCB最大的点，直到叶子节点。程序会优先搜索没有访问过的点。</p>
+<h3 id="拓展"><a href="#拓展" class="headerlink" title="拓展"></a>拓展</h3><p>在所选的叶子节点L，如果已经能判定输赢，则该轮游戏结束，否则创建一个或多个子节点并选取其中一个节点C。</p>
+<p>每一层的拓展节点是当前局面棋子的外两圈的空点。</p>
+<h3 id="仿真"><a href="#仿真" class="headerlink" title="仿真"></a>仿真</h3><p>程序的仿真策略是：将外两圈的点放到一个数组中，然后用std::random_shuffle打乱，让双方依次按顺序走子。</p>
+<p>若数组走完没有分出胜负，则双方取胜次数都+0.5。否则胜利一方取胜次数+1，败方不增加取胜次数。</p>
+<h3 id="反向传播"><a href="#反向传播" class="headerlink" title="反向传播"></a>反向传播</h3><p>在选择和拓展的时候，路径会被加到path数组，反向传播会根据仿真的输赢更新路径上的所有节点信息。</p>
+<h3 id="返回结果"><a href="#返回结果" class="headerlink" title="返回结果"></a>返回结果</h3><p>程序使用多线程处理AI计算，使计算与界面渲染分离，到指定时间后，AI类会取访问量最大的节点，将这个节点位置emit，让界面类处理。</p>
+<h1 id="测试分析报告"><a href="#测试分析报告" class="headerlink" title="测试分析报告"></a>测试分析报告</h1><h2 id="调试过程"><a href="#调试过程" class="headerlink" title="调试过程"></a>调试过程</h2><p>程序在我的电脑上平均5秒只能进行2万次仿真，若所有点都向下拓展，程序的选择就变得随机。</p>
+<p>被局面的变化也并没有对胜率产生很大的影响。</p>
+<p>于是我将程序的周围两圈设为可选节点，AI的正确率得到提升。</p>
+<p>一开始我将UCB函数的常数C过大，导致每个节点探索次数都差不多，出现图上的这种现象：</p>
+<p><img src="https://i.loli.net/2021/01/08/YzS4hsQCb52ZWIH.png" alt="fig4"></p>
+<p>而C过小又可能使AI陷入次优解，最终我将C设置为1.414。</p>
+<p>返回的决策节点有多种选择：经过调试，访问量最大的节点和胜率最高的节点表现比UCB分数最高的节点更好。</p>
+<p>UCB规则导致多轮迭代后每个子节点的UCB值相差不大，容易出现胜率低的节点因为选择次数不多而被选上。</p>
+<p>我选择了访问量最大的节点，而不是胜率最高的节点，也不是UCB分数最高的节点。</p>
+<p>从理论上分析，访问量不够大的节点，即使胜率高，也不够可靠（因为模拟次数不够多）。而访问量最大的节点，通常也有一定的胜率，由于UCB公式，会选择更多的高胜率节点。如果胜率不高是不会经常被选中的（访问量不会大）。所以采用访问量最大的节点，AI的表现会更加稳定。</p>
+<h2 id="成品展示"><a href="#成品展示" class="headerlink" title="成品展示"></a>成品展示</h2><h3 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h3><p>程序编译后加上Qt运行库约占25MB，占用内存大约为60MB，内存管理良好。在i5-8265U处理器下，MCTS5秒可以进行1万到8万次仿真。</p>
+<h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><p>程序可以同时输出搜索的一些信息（迭代次数，节点的经过次数和胜利次数，UCB值）。禁手算法与蒙特卡洛树搜索算法效率较高。</p>
+<h3 id="运行截图"><a href="#运行截图" class="headerlink" title="运行截图"></a>运行截图</h3><p><img src="https://i.loli.net/2021/01/08/6mlQKnFZ48JHtYI.jpg" alt="fig5"></p>
+<h3 id="存在问题与改进方向"><a href="#存在问题与改进方向" class="headerlink" title="存在问题与改进方向"></a>存在问题与改进方向</h3><ol>
+<li>禁手规则设计有问题，有些不是禁手的被错误判断。如图</li>
+</ol>
+<p><img src="https://i.loli.net/2021/01/08/UGIt2ljZFPupnQv.png" alt="rule1"></p>
+<p><img src="https://i.loli.net/2021/01/08/nuDGF1I3rUEzNgy.png" alt="rule2"></p>
+<ol>
+<li>在大棋盘中，AI的防守能力不够。在一边已经组成活三或四的情况下，对手没有去防守。（节点访问次数不够多，估值不可靠）</li>
+<li>没有算杀，不知道已经赢了。</li>
+<li>AI的走子有些随机，每一步之间没有关联性。</li>
+<li>较优解与较劣解的子树可能有较大重叠， 此时MCTS无法发挥出优势且可能陷入局部最优。</li>
+<li>在棋盘绘制的事件中判断输赢并弹框，导致最后一步棋无法显示。</li>
+</ol>
+<h3 id="改进方案"><a href="#改进方案" class="headerlink" title="改进方案"></a>改进方案</h3><ol>
+<li>用递归的方式实现禁手的规则（但是会增加时间复杂度），禁手的规则过于复杂，很难用程序精准描述。</li>
+<li>与min-max搜索的决策函数，甚至深度学习等其他算法结合，有些局面随机走子并不能得出正确的结果，如冲四就比活三危险得多，当对方出现冲四的时候，策略应该是防守而不是拓展活三。  但随机走子的策略可能将冲四封死或先完成活三的连五，这是错误的策略。</li>
+<li>在一些必杀局面或必须要防守的局面介入，不使用AI的结果。</li>
+<li>将AI的线程改为多线程运行，提升程序效率。</li>
+<li>将棋盘保存方式从vector改为两个bitset，可以降低程序的时空复杂度。</li>
+<li>将胜利后的弹框改为信号触发，放在新的函数中。</li>
+<li>用开局库\cite{r1}等方法简化AI的运算、UCT RAVE\cite{r2} 等方法复用状态，提高程序效率。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/homework/" rel="tag"># homework</a>
+              <a href="/tags/%E6%AD%A6%E6%B1%89%E5%A4%A7%E5%AD%A6/" rel="tag"># 武汉大学</a>
+              <a href="/tags/ai/" rel="tag"># ai</a>
+              <a href="/tags/mcts/" rel="tag"># mcts</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/12/12/Real-Programmer-Game/" rel="prev" title="Real-Programmer-Game">
+                  <i class="fa fa-chevron-left"></i> Real-Programmer-Game
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/10/11/RISCV/" rel="next" title="单发射5级流水线 RISC-V CPU">
+                  单发射5级流水线 RISC-V CPU <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+      
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hoo1941</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+      <script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              const target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    const script = document.createElement('script');
+    script.src = '//cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-mml-chtml.js';
+    script.defer = true;
+    document.head.appendChild(script);
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.typesetClear();
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqusjs.css">
+
+<script>
+NexT.utils.loadComments('#disqus_thread', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqus.js', () => {
+    window.dsqjs = new DisqusJS({
+      api       : 'https://disqus.skk.moe/disqus/' || 'https://disqus.com/api/',
+      apikey    : 'le5yPQvXUqn37v1djwqUIwgGWCV6IkGk77hz8GXvhRSDnjfEXjxOnXsocWa0xDgF',
+      shortname : 'hooblog',
+      url       : "https://hooo1941.github.io/2021/01/18/gobang-mcts/",
+      identifier: "2021/01/18/gobang-mcts/",
+      title     : "五子棋的mcts实现",
+    });
+  }, window.DisqusJS);
+});
+</script>
+
+</body>
+</html>
