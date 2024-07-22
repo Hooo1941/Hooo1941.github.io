@@ -24,16 +24,21 @@
     var CONFIG = {"hostname":"hooo1941.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.0.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="HooBlog">
-<meta property="og:url" content="https://hooo1941.github.io/tags/homework/index.html">
+  <meta name="description" content="问题： 在 Ubuntu 22.04 中使用多种方法设置 IP Forwarding 不能即时生效，需要重启。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IP 转发在 Ubuntu 系统中不生效解决方法">
+<meta property="og:url" content="https://hooo1941.github.io/2024/07/11/IP_Forward/index.html">
 <meta property="og:site_name" content="HooBlog">
+<meta property="og:description" content="问题： 在 Ubuntu 22.04 中使用多种方法设置 IP Forwarding 不能即时生效，需要重启。">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-07-11T07:04:41.000Z">
+<meta property="article:modified_time" content="2024-07-22T07:22:54.176Z">
 <meta property="article:author" content="Hoo1941">
+<meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://hooo1941.github.io/tags/homework/">
+<link rel="canonical" href="https://hooo1941.github.io/2024/07/11/IP_Forward/">
 
 
 <script class="page-configurations">
@@ -41,12 +46,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>标签: homework | HooBlog</title>
+  <title>IP 转发在 Ubuntu 系统中不生效解决方法 | HooBlog</title>
   
 
 
@@ -232,101 +237,113 @@
 </noscript>
 
 
-    <div class="main-inner tag posts-collapse">
+    <div class="main-inner post posts-expand">
       
 
       
 
   
-  
-  
-  <div class="post-block">
-    <div class="post-content">
-      <div class="collection-title">
-        <h2 class="collection-header">homework
-          <small>标签</small>
-        </h2>
-      </div>
 
-      
-    <div class="collection-year">
-      <span class="collection-header">2021</span>
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://hooo1941.github.io/2024/07/11/IP_Forward/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Hoo1941">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HooBlog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IP 转发在 Ubuntu 系统中不生效解决方法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-07-11 15:04:41" itemprop="dateCreated datePublished" datetime="2024-07-11T15:04:41+08:00">2024-07-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2024-07-22 15:22:54" itemprop="dateModified" datetime="2024-07-22T15:22:54+08:00">2024-07-22</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><strong>问题：</strong></p>
+<p>在 Ubuntu 22.04 中使用多种方法设置 IP Forwarding 不能即时生效，需要重启。</p>
+<a id="more"></a>
+<p>尝试了修改 <code>/etc/sysctl.conf</code> 和 使用 <code>sysctl</code> 指令修改 <code>net.ipv4.ip_forward</code> 参数，发现 IP forwarding 功能不正常，需要重启后才能生效，但 <code>ip_forward</code> 文件显示功能已经打开。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cat</span> /proc/sys/net/ipv4/ip_forward</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+<p>重启后若 <code>ip_forward</code> 开机状态为 1 时，随意修改该参数可以生效。</p>
+<p><strong>解决方案：</strong></p>
+<p>经过排查，发现是 <code>iptables</code> 防火墙规则没有允许。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt; sudo iptables -L</span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination         </span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy DROP)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination                  </span><br><span class="line">ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED</span><br><span class="line">DOCKER     all  --  anywhere             anywhere            </span><br><span class="line">ACCEPT     all  --  anywhere             anywhere            </span><br><span class="line">ACCEPT     all  --  anywhere             anywhere            </span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<p>可以使用 <code>iptables -P FORWARD ACCEPT</code> 允许转发策略。</p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta-container">
-        <time itemprop="dateCreated"
-              datetime="2021-10-11T19:26:52+08:00"
-              content="2021-10-11">
-          10-11
-        </time>
-      </div>
+    
+    
+    
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2021/10/11/RISCV/" itemprop="url">
-            <span itemprop="name">单发射5级流水线 RISC-V CPU</span>
-          </a>
-      </div>
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/11/01/ByteCTF2021/" rel="prev" title="ByteCTF2021-wp">
+                  <i class="fa fa-chevron-left"></i> ByteCTF2021-wp
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
 
       
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta-container">
-        <time itemprop="dateCreated"
-              datetime="2021-01-18T19:26:52+08:00"
-              content="2021-01-18">
-          01-18
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2021/01/18/gobang-mcts/" itemprop="url">
-            <span itemprop="name">五子棋的mcts实现</span>
-          </a>
-      </div>
-
-      
-    </header>
-  </article>
-    <div class="collection-year">
-      <span class="collection-header">2020</span>
-    </div>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta-container">
-        <time itemprop="dateCreated"
-              datetime="2020-11-11T19:26:52+08:00"
-              content="2020-11-11">
-          11-11
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/11/11/dropegg/" itemprop="url">
-            <span itemprop="name">测试鸡蛋壳等级问题</span>
-          </a>
-      </div>
-
-      
-    </header>
-  </article>
-
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
     </div>
   </div>
   
-  
-  
-
-  
-
-
-
-      
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -409,9 +426,69 @@
   
 
   
+      <script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              const target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    const script = document.createElement('script');
+    script.src = '//cdn.jsdelivr.net/npm/mathjax@3.1.2/es5/tex-mml-chtml.js';
+    script.defer = true;
+    document.head.appendChild(script);
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.typesetClear();
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqusjs.css">
+
+<script>
+NexT.utils.loadComments('#disqus_thread', () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqus.js', () => {
+    window.dsqjs = new DisqusJS({
+      api       : 'https://disqus.skk.moe/disqus/' || 'https://disqus.com/api/',
+      apikey    : 'le5yPQvXUqn37v1djwqUIwgGWCV6IkGk77hz8GXvhRSDnjfEXjxOnXsocWa0xDgF',
+      shortname : 'hooblog',
+      url       : "https://hooo1941.github.io/2024/07/11/IP_Forward/",
+      identifier: "2024/07/11/IP_Forward/",
+      title     : "IP 转发在 Ubuntu 系统中不生效解决方法",
+    });
+  }, window.DisqusJS);
+});
+</script>
 
 </body>
 </html>
