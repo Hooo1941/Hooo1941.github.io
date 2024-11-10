@@ -24,15 +24,15 @@
     var CONFIG = {"hostname":"hooo1941.github.io","root":"/","images":"/images","scheme":"Gemini","version":"8.0.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}};
   </script>
 
-  <meta name="description" content="第一阶段学习总结学习心得初学这门语言时总觉得是一门很繁琐的语言，需要和编译器，但是经过编译器和 clippy 方便的静态检查(折磨)，发现这门语言的确是很严谨的，很多错误都是在编译期就能发现的，到后面就会发现这门语言有一种可以帮你减少错误的感觉。而且 rust 语言的创新性也是很吸引人的，下面是我认为 rust 语言的一些特色：  类型安全：默认不可变，默认私有。 内存安全：包括所有权系统（遇事不">
+  <meta name="description" content="2024秋冬季开源操作系统训练营 rustlings + rCore 两个 lab 的总结">
 <meta property="og:type" content="article">
 <meta property="og:title" content="2024秋冬季开源操作系统训练营一二阶段总结报告">
 <meta property="og:url" content="https://hooo1941.github.io/2024/11/06/2024%E7%A7%8B%E5%86%AC%E5%AD%A3%E5%BC%80%E6%BA%90%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E8%AE%AD%E7%BB%83%E8%90%A5%E4%B8%80%E4%BA%8C%E9%98%B6%E6%AE%B5%E6%80%BB%E7%BB%93%E6%8A%A5%E5%91%8A/index.html">
 <meta property="og:site_name" content="HooBlog">
-<meta property="og:description" content="第一阶段学习总结学习心得初学这门语言时总觉得是一门很繁琐的语言，需要和编译器，但是经过编译器和 clippy 方便的静态检查(折磨)，发现这门语言的确是很严谨的，很多错误都是在编译期就能发现的，到后面就会发现这门语言有一种可以帮你减少错误的感觉。而且 rust 语言的创新性也是很吸引人的，下面是我认为 rust 语言的一些特色：  类型安全：默认不可变，默认私有。 内存安全：包括所有权系统（遇事不">
+<meta property="og:description" content="2024秋冬季开源操作系统训练营 rustlings + rCore 两个 lab 的总结">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-11-06T15:33:01.000Z">
-<meta property="article:modified_time" content="2024-11-09T16:41:18.156Z">
+<meta property="article:modified_time" content="2024-11-10T09:16:32.849Z">
 <meta property="article:author" content="Hoo1941">
 <meta property="article:tag" content="[object Object]">
 <meta name="twitter:card" content="summary">
@@ -178,7 +178,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <section class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93"><span class="nav-number">1.</span> <span class="nav-text">第一阶段学习总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%BF%83%E5%BE%97"><span class="nav-number">1.1.</span> <span class="nav-text">学习心得</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="nav-number">1.2.</span> <span class="nav-text">学习路径</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">第二阶段学习总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">学习过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%93%E4%BC%9A%E4%B8%8E%E6%80%BB%E7%BB%93"><span class="nav-number">2.2.</span> <span class="nav-text">体会与总结</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%BF%83%E5%BE%97"><span class="nav-number">1.</span> <span class="nav-text">学习心得</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="nav-number">2.</span> <span class="nav-text">学习路径</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93"><span class="nav-number"></span> <span class="nav-text">第二阶段学习总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E8%BF%87%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">学习过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%93%E4%BC%9A%E4%B8%8E%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">体会与总结</span></a></li></ol></div>
         </section>
         <!--/noindex-->
 
@@ -191,13 +191,9 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
         <span class="site-state-item-count">25</span>
@@ -286,17 +282,8 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2024-11-10 00:41:18" itemprop="dateModified" datetime="2024-11-10T00:41:18+08:00">2024-11-10</time>
+        <time title="修改时间：2024-11-10 17:16:32" itemprop="dateModified" datetime="2024-11-10T17:16:32+08:00">2024-11-10</time>
       </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/2024%E7%A7%8B%E5%86%AC%E5%AD%A3%E5%BC%80%E6%BA%90%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E8%AE%AD%E7%BB%83%E8%90%A5/" itemprop="url" rel="index"><span itemprop="name">2024秋冬季开源操作系统训练营</span></a>
-        </span>
-    </span>
 
   
 </div>
@@ -308,7 +295,9 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h2 id="第一阶段学习总结"><a href="#第一阶段学习总结" class="headerlink" title="第一阶段学习总结"></a>第一阶段学习总结</h2><h3 id="学习心得"><a href="#学习心得" class="headerlink" title="学习心得"></a>学习心得</h3><p>初学这门语言时总觉得是一门很繁琐的语言，需要和编译器，但是经过编译器和 clippy 方便的静态检查<del>(折磨)</del>，发现这门语言的确是很严谨的，很多错误都是在编译期就能发现的，到后面就会发现这门语言有一种可以帮你减少错误的感觉。而且 rust 语言的创新性也是很吸引人的，下面是我认为 rust 语言的一些特色：</p>
+        <p>2024秋冬季开源操作系统训练营 rustlings + rCore 两个 lab 的总结</p>
+<a id="more"></a>
+<h3 id="学习心得"><a href="#学习心得" class="headerlink" title="学习心得"></a>学习心得</h3><p>初学这门语言时总觉得是一门很繁琐的语言，需要和编译器，但是经过编译器和 clippy 方便的静态检查<del>(折磨)</del>，发现这门语言的确是很严谨的，很多错误都是在编译期就能发现的，到后面就会发现这门语言有一种可以帮你减少错误的感觉。而且 rust 语言的创新性也是很吸引人的，下面是我认为 rust 语言的一些特色：</p>
 <ol>
 <li>类型安全：默认不可变，默认私有。</li>
 <li>内存安全：包括所有权系统（遇事不决用.clone()），借用概念，智能指针&amp;RAII，生命周期等。</li>
@@ -357,6 +346,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2024/11/10/cpipc2024-wp/" rel="next" title="cpipc2024_wp">
+                  cpipc2024_wp <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
     </footer>
