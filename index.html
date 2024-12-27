@@ -185,7 +185,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -236,6 +236,93 @@
       
 
       
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://hooo1941.github.io/2024/12/27/pagetable/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Hoo1941">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HooBlog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/12/27/pagetable/" class="post-title-link" itemprop="url">Linux 内核的 x86_64 页表使用相关源码分析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-12-27 17:20:16 / 修改时间：17:24:16" itemprop="dateCreated datePublished" datetime="2024-12-27T17:20:16+08:00">2024-12-27</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>以下分析基于 kernel 版本：6.1.121</p>
+<h3 id="Linux-x86-64-下四级页表的创建、页表内容填充功能和相关结构体分析："><a href="#Linux-x86-64-下四级页表的创建、页表内容填充功能和相关结构体分析：" class="headerlink" title="Linux x86_64 下四级页表的创建、页表内容填充功能和相关结构体分析："></a>Linux x86_64 下四级页表的创建、页表内容填充功能和相关结构体分析：</h3><p>在 kernel 中，/arch/x86/include/asm/pgtable.h 包含了x86架构通用的页表管理接口，包括页表的设置和清除清除函数、页表条目的标志位操作函数、页表条目到物理地址的转换函数，/arch/x86/include/asm/pgtable_64.h 文件包含修改和使用 x86-64 四级页表树所需的函数和定义。另外，二级页表和三级页表的相关函数和定义在同一目录下的pgtable-2level.h 和pgtable-3level.h中。</p>
+<p>arch/x86/include/asm/pgtable_types.h 中记录了页表中不同比特位代表的含义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PRESENT	0	<span class="comment">/* is present */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_RW		1	<span class="comment">/* writeable */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_USER		2	<span class="comment">/* userspace addressable */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PWT		3	<span class="comment">/* page write through */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PCD		4	<span class="comment">/* page cache disabled */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_ACCESSED	5	<span class="comment">/* was accessed (raised by CPU) */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_DIRTY		6	<span class="comment">/* was written to (raised by CPU) */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PSE		7	<span class="comment">/* 4 MB (or 2MB) page */</span>	</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PAT		7	<span class="comment">/* on 4KB pages */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_GLOBAL	8	<span class="comment">/* Global TLB entry PPro+ */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_SOFTW1	9	<span class="comment">/* available for programmer */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_SOFTW2	10	<span class="comment">/* &quot; */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_SOFTW3	11	<span class="comment">/* &quot; */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PAT_LARGE	12	<span class="comment">/* On 2MB or 1GB pages */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_SOFTW4	58	<span class="comment">/* available for programmer */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PKEY_BIT0	59	<span class="comment">/* Protection Keys, bit 1/4 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PKEY_BIT1	60	<span class="comment">/* Protection Keys, bit 2/4 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PKEY_BIT2	61	<span class="comment">/* Protection Keys, bit 3/4 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_PKEY_BIT3	62	<span class="comment">/* Protection Keys, bit 4/4 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _PAGE_BIT_NX		63	<span class="comment">/* No execute: only valid after cpuid check */</span></span></span><br></pre></td></tr></table></figure>
+<p>这些比特位定义在 pgtable.h 中进一步封装成了函数，如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">pte_dirty</span><span class="params">(<span class="keyword">pte_t</span> pte)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> pte_flags(pte) &amp; _PAGE_DIRTY;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">pte_young</span><span class="params">(<span class="keyword">pte_t</span> pte)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> pte_flags(pte) &amp; _PAGE_ACCESSED;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">pmd_dirty</span><span class="params">(<span class="keyword">pmd_t</span> pmd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> pmd_flags(pmd) &amp; _PAGE_DIRTY;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ......</span></span><br></pre></td></tr></table></figure>
+<p>内核页表的初始化是在 /arch/x86/mm/init_64.c 的 <code>__kernel_physical_mapping_init</code> 函数完成的，该函数用于将物理地址范围映射到虚拟地址范围，并设置相应的页表条目。</p>
+<p>函数接受需要映射的物理地址<code>paddr_start</code> 到 <code>paddr_start</code>、页面大小<code>page_size_mask</code>、页面的保护属性<code>prot</code>和是否在内核初始化时创建的映射<code>init</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> __meminit</span><br><span class="line">__kernel_physical_mapping_init(<span class="keyword">unsigned</span> <span class="keyword">long</span> paddr_start,</span><br><span class="line">                               <span class="keyword">unsigned</span> <span class="keyword">long</span> paddr_end,</span><br><span class="line">                               <span class="keyword">unsigned</span> <span class="keyword">long</span> page_size_mask,</span><br><span class="line">                               <span class="keyword">pgprot_t</span> prot, <span class="keyword">bool</span> init)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">bool</span> pgd_changed = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> vaddr, vaddr_start, vaddr_end, vaddr_next, paddr_last;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将物理地址转换为虚拟地址</span></span><br><span class="line">    paddr_last = paddr_end;</span><br><span class="line">    vaddr = (<span class="keyword">unsigned</span> <span class="keyword">long</span>)__va(paddr_start);</span><br><span class="line">    vaddr_end = (<span class="keyword">unsigned</span> <span class="keyword">long</span>)__va(paddr_end);</span><br><span class="line">    vaddr_start = vaddr;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 遍历虚拟地址范围，设置页表条目</span></span><br><span class="line">    <span class="keyword">for</span> (; vaddr &lt; vaddr_end; vaddr = vaddr_next) &#123;</span><br><span class="line">        <span class="keyword">pgd_t</span> *pgd = pgd_offset_k(vaddr);</span><br><span class="line">        <span class="keyword">p4d_t</span> *p4d;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 计算下一个 PGDIR 边界</span></span><br><span class="line">        vaddr_next = (vaddr &amp; PGDIR_MASK) + PGDIR_SIZE;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果 PGD 条目已经存在，初始化 P4D</span></span><br><span class="line">        <span class="keyword">if</span> (pgd_val(*pgd)) &#123;</span><br><span class="line">            p4d = (<span class="keyword">p4d_t</span> *)pgd_page_vaddr(*pgd);</span><br><span class="line">            paddr_last = phys_p4d_init(p4d, __pa(vaddr),</span><br><span class="line">                                       __pa(vaddr_end),</span><br><span class="line">                                       page_size_mask,</span><br><span class="line">                                       prot, init);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 分配一个新的 P4D 页</span></span><br><span class="line">        p4d = alloc_low_page();</span><br><span class="line">        paddr_last = phys_p4d_init(p4d, __pa(vaddr), __pa(vaddr_end),</span><br><span class="line">                                   page_size_mask, prot, init);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 加锁并填充 PGD 条目</span></span><br><span class="line">        spin_lock(&amp;init_mm.page_table_lock);</span><br><span class="line">        <span class="keyword">if</span> (pgtable_l5_enabled())</span><br><span class="line">            pgd_populate_init(&amp;init_mm, pgd, p4d, init);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            p4d_populate_init(&amp;init_mm, p4d_offset(pgd, vaddr),</span><br><span class="line">                              (<span class="keyword">pud_t</span> *) p4d, init);</span><br><span class="line"></span><br><span class="line">        spin_unlock(&amp;init_mm.page_table_lock);</span><br><span class="line">        pgd_changed = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果 PGD 条目发生变化，同步全局 PGD</span></span><br><span class="line">    <span class="keyword">if</span> (pgd_changed)</span><br><span class="line">        sync_global_pgds(vaddr_start, vaddr_end - <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> paddr_last;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在内核初始化过程中，<code>prot</code> 传入的是 <code>PAGE_KERNEL</code>，这个宏展开之后是 <code>__PP|__RW|   0|___A|__NX|___D|   0|___G</code>，这些位会被直接设置在页表项上。</p>
+<h3 id="缺页异常处理程序和相关结构体分析："><a href="#缺页异常处理程序和相关结构体分析：" class="headerlink" title="缺页异常处理程序和相关结构体分析："></a>缺页异常处理程序和相关结构体分析：</h3><p>内核定义了一个swap_info_struct数据结构，用以描述和管理用于页交换的文件或设备如图4所示。swap_map指向一个数组，该数组中每个无符号短整数即代表盘上（或普通文件中）的一个物理页，数组的下标决定了该页在磁盘或文件中的位置数组的大小存放在pages中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">swap_info_struct</span> &#123;</span></span><br><span class="line">	…</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *swap_map;	<span class="comment">/* vmalloc&#x27;ed array of usage counts */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> pages;		<span class="comment">/* total of usable pages of swap */</span></span><br><span class="line">	…</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>include/linux/swap.h中定义的swap_info_struct数据结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line"> 	<span class="keyword">unsigned</span> <span class="keyword">long</span> val;</span><br><span class="line"> &#125; <span class="keyword">swp_entry_t</span>;</span><br></pre></td></tr></table></figure>
+<p>include/linux/mm_types.h 中定义的 swap_entry_t 数据结构</p>
+<p>swp_entry_t实际上只有一个成员val，其类型为64位无符号整数，当P=1时，PTE里存放的是对应的物理页号及其属性；P=0时，操作系统存放的是swp_entry_t类型的表项，指示出该虚拟页在外存中的位置，包括在哪一个文件或设备，以及在其上的相对位置，从而将硬件忽略不处理的63位充分的利用了起来。</p>
+<p>/arch/x86/include/asm/pgtable_64.h 中中定义的与swp_entry_t及其和pte_t有关的操作，注释说明了 x86_64 中 swp_entry_t 的结构。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Encode and de-code a swap entry</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * |     ...            | 11| 10|  9|8|7|6|5| 4| 3|2| 1|0| &lt;- bit number</span></span><br><span class="line"><span class="comment"> * |     ...            |SW3|SW2|SW1|G|L|D|A|CD|WT|U| W|P| &lt;- bit names</span></span><br><span class="line"><span class="comment"> * | TYPE (59-63) | ~OFFSET (9-58)  |0|0|X|X| X| E|F|SD|0| &lt;- swp entry</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * G (8) is aliased and used as a PROT_NONE indicator for</span></span><br><span class="line"><span class="comment"> * !present ptes.  We need to start storing swap entries above</span></span><br><span class="line"><span class="comment"> * there.  We also need to avoid using A and D because of an</span></span><br><span class="line"><span class="comment"> * erratum where they can be incorrectly set by hardware on</span></span><br><span class="line"><span class="comment"> * non-present PTEs.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * SD Bits 1-4 are not used in non-present format and available for</span></span><br><span class="line"><span class="comment"> * special use described below:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * SD (1) in swp entry is used to store soft dirty bit, which helps us</span></span><br><span class="line"><span class="comment"> * remember soft dirty over page migration</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * F (2) in swp entry is used to record when a pagetable is</span></span><br><span class="line"><span class="comment"> * writeprotected by userfaultfd WP support.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * E (3) in swp entry is used to rememeber PG_anon_exclusive.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Bit 7 in swp entry should be 0 because pmd_present checks not only P,</span></span><br><span class="line"><span class="comment"> * but also L and G.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * The offset is inverted by a binary not operation to make the high</span></span><br><span class="line"><span class="comment"> * physical bits set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SWP_TYPE_BITS		5</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SWP_OFFSET_FIRST_BIT	(_PAGE_BIT_PROTNONE + 1)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* We always extract/encode the offset by shifting it all the way up, and then down again */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SWP_OFFSET_SHIFT	(SWP_OFFSET_FIRST_BIT+SWP_TYPE_BITS)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT &gt; SWP_TYPE_BITS)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Extract the high bits for type */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __swp_type(x) ((x).val &gt;&gt; (64 - SWP_TYPE_BITS))</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Shift up (to get rid of type), then down to get value */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __swp_offset(x) (~(x).val <span class="meta-string">&lt;&lt; SWP_TYPE_BITS &gt;&gt; SWP_OFFSET_SHIFT)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Shift the offset up &quot;too far&quot; by TYPE bits, then down again</span></span><br><span class="line"><span class="comment"> * The offset is inverted by a binary not operation to make the high</span></span><br><span class="line"><span class="comment"> * physical bits set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __swp_entry(type, offset) ((swp_entry_t) &#123; \</span></span><br><span class="line">	(~(<span class="keyword">unsigned</span> <span class="keyword">long</span>)(offset) &lt;&lt; SWP_OFFSET_SHIFT &gt;&gt; SWP_TYPE_BITS) \</span><br><span class="line">	| ((<span class="keyword">unsigned</span> <span class="keyword">long</span>)(type) &lt;&lt; (<span class="number">64</span>-SWP_TYPE_BITS)) &#125;)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __pte_to_swp_entry(pte)		((swp_entry_t) &#123; pte_val((pte)) &#125;)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __pmd_to_swp_entry(pmd)		((swp_entry_t) &#123; pmd_val((pmd)) &#125;)</span></span><br></pre></td></tr></table></figure>
+<p><code>swp_entry_t.val</code> 和 <code>pte_t.val</code> 的类型均为 <code>unsigned long</code>，在 x86_64 编译器中，该类型表示64位无符号整数，对应着一个 x86_64 页表项的结构,所以 <code>__pte_to_swp_entry</code> 和 <code>__pmd_to_swp_entry</code> 可以直接进行类型转换。</p>
+<p>在include/linux/swapops.h中，使用上面的宏定义实现了 pte 和 swp_entry 相互转换的函数，由于 linux 的 pte_t 和 swp_entry_t 结构都是 arch-independent 的，这个函数自然也是 arch-independent 的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Convert the arch-dependent pte representation of a swp_entry_t into an</span></span><br><span class="line"><span class="comment"> * arch-independent swp_entry_t.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">swp_entry_t</span> <span class="title">pte_to_swp_entry</span><span class="params">(<span class="keyword">pte_t</span> pte)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">swp_entry_t</span> arch_entry;</span><br><span class="line"></span><br><span class="line">	pte = pte_swp_clear_flags(pte);</span><br><span class="line">	arch_entry = __pte_to_swp_entry(pte);</span><br><span class="line">	<span class="keyword">return</span> swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Convert the arch-independent representation of a swp_entry_t into the</span></span><br><span class="line"><span class="comment"> * arch-dependent pte representation.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">pte_t</span> <span class="title">swp_entry_to_pte</span><span class="params">(<span class="keyword">swp_entry_t</span> entry)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">swp_entry_t</span> arch_entry;</span><br><span class="line"></span><br><span class="line">	arch_entry = __swp_entry(swp_type(entry), swp_offset(entry));</span><br><span class="line">	<span class="keyword">return</span> __swp_entry_to_pte(arch_entry);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数被mm模块中的多个函数调用，如在 /mm/madvise.c 中处理 <code>madvise</code> 系统调用中的 <code>MADV_WILLNEED</code> 建议时，会调用 <code>swapin_walk_pmd_entry</code> 函数，该函数作用是遍历一个 <code>PMD</code> 范围内的 PTE，并尝试将 swap 中的页面异步读入内存中。<code>MADV_WILLNEED</code> 建议内核预取指定范围内的页面，以便将来访问时减少缺页中断。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">swapin_walk_pmd_entry</span><span class="params">(<span class="keyword">pmd_t</span> *pmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> start,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">unsigned</span> <span class="keyword">long</span> end, struct mm_walk *walk)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">vm_area_struct</span> *<span class="title">vma</span> =</span> walk-&gt;<span class="keyword">private</span>; <span class="comment">// 获取 VMA（虚拟内存区域）结构体</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> index;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">swap_iocb</span> *<span class="title">splug</span> =</span> <span class="literal">NULL</span>; <span class="comment">// 用于异步交换 I/O 操作的控制块</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pmd_none_or_trans_huge_or_clear_bad(pmd))</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 遍历指定范围内的 PTE</span></span><br><span class="line">    <span class="keyword">for</span> (index = start; index != end; index += PAGE_SIZE) &#123;</span><br><span class="line">        <span class="keyword">pte_t</span> pte;</span><br><span class="line">        <span class="keyword">swp_entry_t</span> entry;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">page</span> *<span class="title">page</span>;</span></span><br><span class="line">        <span class="keyword">spinlock_t</span> *ptl;</span><br><span class="line">        <span class="keyword">pte_t</span> *ptep;</span><br><span class="line"></span><br><span class="line">        ptep = pte_offset_map_lock(vma-&gt;vm_mm, pmd, index, &amp;ptl);</span><br><span class="line">        pte = *ptep;</span><br><span class="line">        pte_unmap_unlock(ptep, ptl);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 检查 PTE 是否为被回收</span></span><br><span class="line">        <span class="keyword">if</span> (!is_swap_pte(pte))</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        entry = pte_to_swp_entry(pte); <span class="comment">// 将 PTE 转换为swp_entry</span></span><br><span class="line">        <span class="keyword">if</span> (unlikely(non_swap_entry(entry)))</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 异步读取交换缓存中的页面</span></span><br><span class="line">        page = read_swap_cache_async(entry, GFP_HIGHUSER_MOVABLE,</span><br><span class="line">                         vma, index, <span class="literal">false</span>, &amp;splug);</span><br><span class="line">        <span class="keyword">if</span> (page)</span><br><span class="line">            put_page(page);</span><br><span class="line">    &#125;</span><br><span class="line">    swap_read_unplug(splug); <span class="comment">// 完成异步交换 I/O 操作</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
     
 
 
@@ -916,80 +1003,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/01/18/gobang-mcts/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hooo1941.github.io/2020/12/12/Real-Programmer-Game/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Hoo1941">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="HooBlog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/12/Real-Programmer-Game/" class="post-title-link" itemprop="url">Real-Programmer-Game</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2020-12-12 15:36:47 / 修改时间：23:50:50" itemprop="dateCreated datePublished" datetime="2020-12-12T15:36:47+08:00">2020-12-12</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>一道dp/概率论的题目。</p>
-<p>source：<a target="_blank" rel="noopener" href="https://www.v2ex.com/t/733644">北美字节（Tik ToK）的题难到逆天了 - V2EX</a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/12/12/Real-Programmer-Game/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
