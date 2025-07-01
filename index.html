@@ -185,7 +185,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -366,86 +366,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/02/26/android_power/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hooo1941.github.io/2024/12/27/pagetable/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Hoo1941">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="HooBlog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2024/12/27/pagetable/" class="post-title-link" itemprop="url">Linux 内核的 x86_64 页表使用和缺页异常相关源码分析</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-12-27 17:20:16" itemprop="dateCreated datePublished" datetime="2024-12-27T17:20:16+08:00">2024-12-27</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2025-02-26 15:01:38" itemprop="dateModified" datetime="2025-02-26T15:01:38+08:00">2025-02-26</time>
-      </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>以下分析基于 kernel 版本：6.1.121</p>
-<h3 id="Linux-x86-64-下四级页表的创建、页表内容填充功能和相关结构体分析："><a href="#Linux-x86-64-下四级页表的创建、页表内容填充功能和相关结构体分析：" class="headerlink" title="Linux x86_64 下四级页表的创建、页表内容填充功能和相关结构体分析："></a>Linux x86_64 下四级页表的创建、页表内容填充功能和相关结构体分析：</h3><p>在 kernel 中，/arch/x86/include/asm/pgtable.h 包含了x86架构通用的页表管理接口，包括页表的设置和清除清除函数、页表条目的标志位操作函数、页表条目到物理地址的转换函数，/arch/x86/include/asm/pgtable_64.h 文件包含修改和使用 x86-64 四级页表树所需的函数和定义。另外，二级页表和三级页表的相关函数和定义在同一目录下的pgtable-2level.h 和pgtable-3level.h中。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2024/12/27/pagetable/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -988,6 +908,86 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/11/01/ByteCTF2021/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://hooo1941.github.io/2021/10/11/RISCV/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Hoo1941">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HooBlog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/10/11/RISCV/" class="post-title-link" itemprop="url">单发射5级流水线 RISC-V CPU</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-10-11 19:26:52" itemprop="dateCreated datePublished" datetime="2021-10-11T19:26:52+08:00">2021-10-11</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-11-03 10:26:22" itemprop="dateModified" datetime="2021-11-03T10:26:22+08:00">2021-11-03</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>使用 vivado 和 Nexys4-DDR 实现的单发射5级流水线 RISC-V CPU。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Hooo1941/COE-RISC-V">github</a></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/10/11/RISCV/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
